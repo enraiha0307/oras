@@ -19,21 +19,27 @@ import (
 	credentials "github.com/oras-project/oras-credentials-go"
 )
 
+var (
+	CreateNewStore              = credentials.NewStore
+	CreateNewStoreFromDocker    = credentials.NewStoreFromDocker
+	CreateNewStoreWithFallbacks = credentials.NewStoreWithFallbacks
+)
+
 // NewStore generates a store based on the passed-in config file paths.
 func NewStore(configPaths ...string) (credentials.Store, error) {
 	opts := credentials.StoreOptions{AllowPlaintextPut: true}
 	if len(configPaths) == 0 {
 		// use default docker config file path
-		return credentials.NewStoreFromDocker(opts)
+		return CreateNewStoreFromDocker(opts)
 	}
 
 	var stores []credentials.Store
 	for _, config := range configPaths {
-		store, err := credentials.NewStore(config, opts)
+		store, err := CreateNewStore(config, opts)
 		if err != nil {
 			return nil, err
 		}
 		stores = append(stores, store)
 	}
-	return credentials.NewStoreWithFallbacks(stores[0], stores[1:]...), nil
+	return CreateNewStoreWithFallbacks(stores[0], stores[1:]...), nil
 }

@@ -31,6 +31,7 @@ import (
 
 	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/stretchr/testify/assert"
 	"oras.land/oras-go/v2"
 	"oras.land/oras-go/v2/content"
 	"oras.land/oras-go/v2/content/memory"
@@ -267,4 +268,11 @@ func TestProxy_fetchReference(t *testing.T) {
 	if successCount != wantSuccessCount {
 		t.Errorf("unexpected number of successful requests: %d, want %d", successCount, wantSuccessCount)
 	}
+}
+
+func TestNew(t *testing.T) {
+	target := memory.New()
+
+	result := New(target, target)
+	assert.NotNil(t, result)
 }
