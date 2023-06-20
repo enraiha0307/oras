@@ -17,10 +17,10 @@ package credential
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	credentials "github.com/oras-project/oras-credentials-go"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestNewStoreError(t *testing.T) {
@@ -35,8 +35,12 @@ func TestNewStoreError(t *testing.T) {
 	var config string = "testconfig"
 	credStore, err := NewStore(config)
 
-	assert.Nil(t, credStore)
-	assert.Error(t, err, "error is not nil")
+	if !reflect.DeepEqual(credStore, nil) {
+		t.Errorf("Expected NewStore to return nil but actually returned %v ", credStore)
+	}
+	if reflect.DeepEqual(err, nil) {
+		t.Error("Expected Error to be not nil but actually returned nil ")
+	}
 
 }
 
@@ -53,7 +57,11 @@ func TestNewStoreEmptyConfig(t *testing.T) {
 	var config string = " "
 	credStore, err := NewStore(config)
 
-	assert.NotNil(t, credStore, "credStore is not nil")
-	assert.Nil(t, err, "error is  nil")
+	if reflect.DeepEqual(credStore, nil) {
+		t.Error("Expected NewStore to return not nil but actually returned nil ")
+	}
+	if !reflect.DeepEqual(err, nil) {
+		t.Errorf("Expected Error to be nil but actually returned %v ", err)
+	}
 
 }
