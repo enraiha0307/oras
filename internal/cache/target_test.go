@@ -39,6 +39,30 @@ import (
 	"oras.land/oras-go/v2/registry/remote"
 )
 
+type testTarget struct {
+	errors error
+}
+
+type testReferenceTarget struct {
+	errors error
+}
+
+func (t *testTarget) Fetch(ctx context.Context, target ocispec.Descriptor) (io.ReadCloser, error) {
+	return nil, fmt.Errorf("error")
+}
+
+func (t *testTarget) cacheReadCloser(ctx context.Context, rc io.ReadCloser, target ocispec.Descriptor) io.ReadCloser {
+	return nil
+}
+
+func (t *testTarget) Exists(ctx context.Context, desc ocispec.Descriptor) (bool, error) {
+	return false, nil
+}
+
+func (t *testReferenceTarget) FetchReference(ctx context.Context, reference string) (ocispec.Descriptor, io.ReadCloser, error) {
+	return ocispec.Descriptor{}, nil, fmt.Errorf("error")
+}
+
 func TestProxy_fetchCache(t *testing.T) {
 	blob := []byte("hello world")
 	desc := ocispec.Descriptor{
@@ -271,8 +295,17 @@ func TestProxy_fetchReference(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	target := memory.New()
+	// target := memory.New()
+	blob := []byte("hello world")
+	desc := ocispec.Descriptor{
+		MediaType: "test",
+		Digest:    digest.FromBytes(blob),
+		Size:      int64(len(blob)),
+	}
+	target := testTarget{}
+	assert.NotNil(t, target)
 
-	result := New(target, target)
-	assert.NotNil(t, result)
+	result, err := target.Exists(context.TODO(), desc)
+	assert.Equal(t, result, false)
+	assert.Nil(t, err)
 }
