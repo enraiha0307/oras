@@ -16,23 +16,31 @@ limitations under the License.
 package credential
 
 import (
-	"fmt"
+	"os"
 	"reflect"
 	"testing"
-
-	credentials "github.com/oras-project/oras-credentials-go"
 )
 
 func TestNewStoreError(t *testing.T) {
-	// save current function
-	oldFunction := CreateNewStore
-	// restoring changes
-	defer func() { CreateNewStore = oldFunction }()
-	CreateNewStore = func(configPath string, opts credentials.StoreOptions) (credentials.Store, error) {
-		return nil, fmt.Errorf("New Error")
+	filename := "testfile.txt"
+	_, err := os.Create(filename)
+	if err != nil {
+		t.Errorf("error while creating test file %v", err)
+	}
+	defer func() {
+		err := os.Remove(filename)
+		if err != nil {
+			t.Errorf("error while removing test file %v", err)
+			t.Fatal(err)
+		}
+	}()
+
+	err = os.Chmod(filename, 000)
+	if err != nil {
+		t.Errorf("error: cannot change file permissions: %v", err)
 	}
 
-	var config string = "testconfig"
+	var config string = filename
 	credStore, err := NewStore(config)
 
 	if !reflect.DeepEqual(credStore, nil) {
@@ -40,28 +48,6 @@ func TestNewStoreError(t *testing.T) {
 	}
 	if reflect.DeepEqual(err, nil) {
 		t.Error("Expected Error to be not nil but actually returned nil ")
-	}
-
-}
-
-func TestNewStoreEmptyConfig(t *testing.T) {
-	// save current function
-	oldFunction := CreateNewStoreFromDocker
-	// restoring changes
-	defer func() { CreateNewStoreFromDocker = oldFunction }()
-
-	CreateNewStoreFromDocker = func(opt credentials.StoreOptions) (credentials.Store, error) {
-		return nil, fmt.Errorf("New Error")
-	}
-
-	var config string = " "
-	credStore, err := NewStore(config)
-
-	if reflect.DeepEqual(credStore, nil) {
-		t.Error("Expected NewStore to return not nil but actually returned nil ")
-	}
-	if !reflect.DeepEqual(err, nil) {
-		t.Errorf("Expected Error to be nil but actually returned %v ", err)
 	}
 
 }

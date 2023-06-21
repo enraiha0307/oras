@@ -20,7 +20,6 @@ import (
 )
 
 var (
-	CreateNewStore              = credentials.NewStore
 	CreateNewStoreFromDocker    = credentials.NewStoreFromDocker
 	CreateNewStoreWithFallbacks = credentials.NewStoreWithFallbacks
 )
@@ -35,7 +34,7 @@ func NewStore(configPaths ...string) (credentials.Store, error) {
 
 	var stores []credentials.Store
 	for _, config := range configPaths {
-		store, err := CreateNewStore(config, opts)
+		store, err := credentials.NewStore(config, opts)
 		if err != nil {
 			return nil, err
 		}
